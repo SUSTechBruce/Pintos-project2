@@ -137,3 +137,51 @@ lock_release(&filesys_lock);
 ```
 ## Rationale
 - In the task1 passed by this parameter, our main purpose is to separate the file name and various parameters passed in from the command line in process execute, load and setupstack, and assign the parameters to a specific stack in a specific order. Therefore, the method logic for processing parameter passing is relatively clear.
+
+## Task2: Process Control Syscalls
+### syscall.c
+```c
+void judge_stack_addr(const void *address);
+```
+- Determine whether the address is reasonable, such as whether it exceeds the address of the stack, and whether it does   not match the address format of the stack.
+```c
+void call_of_stack(int *arg, int *pointer, int offset);
+```
+- Call the parameters out of the stack and perform the next call to the system call function.
+```c
+void Halt(void);
+```
+- system call Halt.
+```c
+int Execute(struct intr_frame *f);
+```
+- system call Execute.
+```c
+int Wait(struct intr_frame *f);
+```
+- system call Wait;
+### thread.h
+```c
+struct child_process * next_c_process; 
+```
+- Next child process.
+```c
+struct list file_list;    
+```
+- List of all open files.
+```c
+uint8_t *stack;                   
+```
+- Save stack pointer
+```c
+enum process_status check;  
+```
+- Save the process state, whether it is a successful load or a failure.
+```c
+struct file *exec_file;  
+```
+- Determine if this file is an executable file.
+```c
+ unsigned stackoverflow;               
+```
+- Determine if a stack overflow will occur
