@@ -139,6 +139,7 @@ lock_release(&filesys_lock);
 - In the task1 passed by this parameter, our main purpose is to separate the file name and various parameters passed in from the command line in process execute, load and setupstack, and assign the parameters to a specific stack in a specific order. Therefore, the method logic for processing parameter passing is relatively clear.
 
 ## Task2: Process Control Syscalls
+## Data structure and functions
 ### syscall.c
 ```c
 void judge_stack_addr(const void *address);
@@ -148,6 +149,14 @@ void judge_stack_addr(const void *address);
 void call_of_stack(int *arg, int *pointer, int offset);
 ```
 - Call the parameters out of the stack and perform the next call to the system call function.
+```c
+void syscall_init();
+```
+- Initialize a specific array to NULL；
+```c
+void syscall_handler();
+```
+- Call the corresponding code according to the parameter name.
 ```c
 void Halt(void);
 ```
@@ -185,3 +194,14 @@ struct file *exec_file;
  unsigned stackoverflow;               
 ```
 - Determine if a stack overflow will occur
+
+## Algorithm and implenmentation
+- **Step1**: Initialize the parameter array in the created `syscall_init()` function, and complete the corresponding parameter call method in the syscallhandler.
+- **Step2**: The system calls system call HALT. First, call the `shut_down_poweroff()` function to shut down the operating system. When the user program causes a page fault, it will enter the `pagefault()` function. We need to add the pagefault function to handle the page error.
+```c
+
+void Halt(void) {
+	shutdown_power_off();
+}
+```
+- **Step3**:Execute(). In this algorithm, the user can create a child process using this system call. The specific steps are a. First, assign a page and copy a user-provided username. b. Create a child process in the function call process execute function.
