@@ -221,4 +221,10 @@ lock_acquire(&filesys_lock);
 // Loads an ELF executable from FILE_NAME into the current thread.
 lock_release(&filesys_lock);
 ```
-## 
+In addition, when these functions involve the relationship between the child process and the parent process, the synchronization semaphore is used to ensure synchronization.
+```c
+semp_up(sema);
+sema_down(sema);
+```
+## Rationale
+- n implementing these functions, we analyzed the various deep call functions involved in these functions, and used the synchronization `semaphore` to ensure the relationship between the father and child processes.
