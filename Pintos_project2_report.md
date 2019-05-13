@@ -209,4 +209,16 @@ void Halt(void) {
 int execute_process(char *file_n);
 ```
 - **Step4**:Wait().First, we made it clear that the parent process may have to wait for the child process to finish after creating the child process. There may be two situations. One is when the parent process calls process_wait() and the child process has not ended.
-The parent process will be suspended, and the parent process will wake up after the child process ends, and the parent process will get the return value. The second is that the child process has ended when the parent process calls `process_wait()`. This requires the child process to save the return value to the process control block of the parent process. So we need to add a data structure in `thread.h` to save the return value of the child process. Therefore, our approach is to **a.** Compare the pid implementation by traversing child_list. If the process control block of the child process is not found in child_list; indicating that the child process has been closed Bundle, directly return the return value of the child process from its own child_list linked list. **b.** If the child process is still running, execute `sema_down(t->parent->SemaWait)` to suspend itself. After the child process is executed, it is found. In waiting==true, you are waiting, and then release the parent process `sema_up(SemaWait)`; if `waiting==false`, you don't need to wake up the parent process. **c.** At the end of a process, call the`free()` function.
+The parent process will be suspended, and the parent process will wake up after the child process ends, and the parent process will get the return value. The second is that the child process has ended when the parent process calls `process_wait()`. This requires the child process to save the return value to the process control block of the parent process. So we need to add a data structure in `thread.h` to save the return value of the child process. Therefore, our approach is to **a.** Compare the pid implementation by traversing `children_list`. If the process control block of the child process is not found in child_list; indicating that the child process has been closed Bundle, directly return the return value of the child process from its own child_list linked list. **b.** If the child process is still running, execute `sema_down(t->parent->SemaWait)` to suspend itself. After the child process is executed, it is found. In waiting==true, you are waiting, and then release the parent process `sema_up(SemaWait)`; if `waiting==false`, you don't need to wake up the parent process. **c.** At the end of a process, call the`free()` function.
+```c
+void process_wait(child_tid);
+```
+## Synchronization
+In the implementation of the `execute()` function and the `waiting()` function, it is necessary to call the load function in the function. The specific function of this function is Loads an ELF executable from FILE_NAME into the current thread.
+Stores the executable's entry point into *EIP and its initial stack pointer into *ESP.Returns true if successful, false otherwise. And we have modified this function, using `lock_acquire(&filesys_lock)` and `lock_release(&filesys_lock)` to ensure that the process is not interfered by other processes. Therefore, the synchronization and consistency of the system call function is guaranteed.
+```c
+lock_acquire(&filesys_lock);
+// Loads an ELF executable from FILE_NAME into the current thread.
+lock_release(&filesys_lock);
+```
+## 
