@@ -54,8 +54,77 @@ int IWrite(struct intr_frame *f);
 - 1. Separate the file name and parameters passed in from the command line.
 - 2. Put the parameters on the stack according to the C function calling convention.
 ### Implementations
-- **Step1**: In the process_execute() function, first use the strtok_r() function to separate the file name from the parameter, use the global variable to record the file name, and pass the file name to the new thread created by threadcreate(). Once the thread is created, let it enter the wait phase.
-- **Step2**: Pass the separated file name to the load() function, assign the value to the user stack pointer esp and allocate the stack space.
-- **Step3**: In the setupstack() function, the parameters separated by strtok_r are assigned to the user stack, and the parameter array arg[] is set to save the position of these parameters on the stack.
+- **Step1**: In the `process_execute()` function, first use the `strtok_r()` function to separate the file name from the parameter, use the global variable to record the file name, and pass the file name to the new thread created by `threadcreate()`. Once the thread is created, let it enter the wait phase.
+```c
+//切割filename，将参数和名字分离
+	char *get_tname;
+	get_tname = malloc(strlen(file_name) + 1);
+	strlcpy(get_tname, file_name, strlen(file_name) + 1);
+	get_tname = strtok_r(get_tname, " ", &string_save);
+	//创建新线程，名字叫做get_tname
+	tid = thread_create(get_tname, PRI_DEFAULT, start_process, fn_copy);
+	free(get_tname);
+```
+- **Step2**: Pass the separated file name to the `load()` function, assign the value to the user stack pointer `esp` and allocate the stack space.
+```c
+void load_split(char * file_str, const char * file_name)
+{
+	strlcpy(file_str, file_name, strlen(file_name) + 1);
+	file_str = strtok_r(file_str, " ", &string_save);
+}
+char *file_str = malloc(strlen(file_name) + 1);
+load_split(file_str, file_name);
+file = filesys_open(file_str);
+```
+- **Step3**: In the `setupstack()` function, the parameters separated by `strtok_r` are assigned to the user stack, and the parameter array `arg[]` is set to save the position of these parameters on the stack.
+```c
+  char * file_str = malloc(strlen(file_name_str) + 1);
+	file_str_split(file_str, file_name_str);
+	int str_length = strlen(file_name_str);
+```
 - **Step4**: The stack pointer has not been stored in one parameter mod4 because the stack is four-byte aligned.
-- **Step5**: Follow the saved pointers in step 2 in the stack, put argc, argv, and let the user stack pointer point to the new stack top.
+```c
+*space = *space - ((unsigned)*space % 4);
+```
+- **Step5**: Follow the saved pointers in step 2 in the stack, put `argc`, `argv`, and let the user stack pointer point to the new stack top.(Put the parameters into the specified memory, and set the parameters into the specified memory)
+```c
+void put_stack_operation(int nums, char * word, char * file_name_str, char * ok_str, void ** space, char * file_str)
+{
+	int *argument = calloc(nums, sizeof(int));
+	int count;
+	word = strtok_r(file_name_str, " ", &ok_str);
+	push_addrss(count, word, space, argument, ok_str, nums, file_str);
+}
+void push_addrss(int count, char * word, void ** space, int * argument, char * ok_str, int nums, char * file_str)
+{
+	for (count = 0; ; count++) {
+		if (word) {
+			*space -= strlen(word) + 1;
+			memcpy(*space, word, strlen(word) + 1);
+			argument[count] = *space;
+			word = strtok_r(NULL, " ", &ok_str);
+		}
+		else {
+			break;
+		}
+	}
+	*space = *space - ((unsigned)*space % 4);
+	*space = *space - sizeof(int);
+
+	for (count = nums - 1; count >= 0; count--)
+	{
+		*space = *space - sizeof(int);
+		memcpy(*space, &argument[count], sizeof(int));
+	}
+
+	int change = *space;
+	*space = *space - sizeof(int);
+	memcpy(*space, &change, sizeof(int));
+	*space = *space - sizeof(int);
+	memcpy(*space, &nums, sizeof(int));
+	*space = *space - sizeof(int);
+	memcpy(*space, &argument[nums], sizeof(int));
+	free(file_str);
+	free(argument);
+}
+```
