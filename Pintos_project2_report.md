@@ -44,8 +44,14 @@ void load_split(char * file_str, const char * file_name);
 static bool setup_stack(char * file_name_str, void **esp);
 ```
 - Create a minimal stack by mapping a zeroed page at the top of user virtual memory.
-### process.c
+### syscall.c
 ```c
 int IWrite(struct intr_frame *f);
 ```
 - write mission of system call.
+## II. Algorithms and implementations
+### Main algorithm
+- 1. Separate the file name and parameters passed in from the command line.
+- 2. Put the parameters on the stack according to the C function calling convention.
+### Implementations
+- 
