@@ -128,3 +128,12 @@ void push_addrss(int count, char * word, void ** space, int * argument, char * o
 	free(argument);
 }
 ```
+## Synchronization
+- In order to maintain synchronization, we use the `fileslock` defined in thread.h to ensure that each time a process is executed, no other process will enter the `critical section` of the executable to ensure the synchronization of the process.
+```c
+lock_acquire(&filesys_lock);
+// Loads an ELF executable from FILE_NAME into the current thread.
+lock_release(&filesys_lock);
+```
+## Rationale
+- In the task1 passed by this parameter, our main purpose is to separate the file name and various parameters passed in from the command line in process execute, load and setupstack, and assign the parameters to a specific stack in a specific order. Therefore, the method logic for processing parameter passing is relatively clear.
