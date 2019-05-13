@@ -54,4 +54,8 @@ int IWrite(struct intr_frame *f);
 - 1. Separate the file name and parameters passed in from the command line.
 - 2. Put the parameters on the stack according to the C function calling convention.
 ### Implementations
-- 
+- **Step1**: In the process_execute() function, first use the strtok_r() function to separate the file name from the parameter, use the global variable to record the file name, and pass the file name to the new thread created by threadcreate(). Once the thread is created, let it enter the wait phase.
+- **Step2**: Pass the separated file name to the load() function, assign the value to the user stack pointer esp and allocate the stack space.
+- **Step3**: In the setupstack() function, the parameters separated by strtok_r are assigned to the user stack, and the parameter array arg[] is set to save the position of these parameters on the stack.
+- **Step4**: The stack pointer has not been stored in one parameter mod4 because the stack is four-byte aligned.
+- **Step5**: Follow the saved pointers in step 2 in the stack, put argc, argv, and let the user stack pointer point to the new stack top.
