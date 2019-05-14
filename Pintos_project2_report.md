@@ -233,10 +233,10 @@ sema_down(sema);
 ## Data structure and functions
 ### syscall.h
 ```c
-struct f_process {
-	struct file* process_r;
+struct f_node {
+	struct file* f;
 	struct list_elem elem;
-	int index;
+	int fd;
 };
 ```
 - Design a struct for record the process of files, including process_r, list_elem elem, index.
@@ -303,3 +303,83 @@ int syscall_tell(struct intr_frame *f);
 void syscall_close(struct intr_frame *f);
 ```
 - Close file.
+## Algorithm and implenmentation
+
+- Step1: Exit().This system call is called when the user exits the program. Therefore, first we should take the return value, save it in the variable of the process control block, and call `thread_exit()` to exit the process. We also need to consider that when the user program exits abnormally, for instance, array out of bounds，it needs to add another function to achieve.
+```c
+void
+thread_exit(void)
+{
+	ASSERT(!intr_context());
+	process_exit();
+	intr_disable();
+	list_remove(&thread_current()->allelem);
+	thread_current()->status = THREAD_DYING;
+	schedule();
+	NOT_REACHED();
+}
+```
+- Step2: Create().For this system call, we need to take the file name separated from the parameter, and then call the filesys_create() function to save the return value.
+```c
+ret = filesys_create(name, initial_size);
+```
+- Step3: Remove(). Remove the file name of the file to be deleted from the user stack. Call filesys_remove() to delete the file.
+```c
+if (filesys_remove(name) != NULL){
+		ret = true;
+	}else{
+		ret = false;
+		}
+```
+- Step4: Open().Take the file name and call the filesys_open function to open the file. At the same time, in order to maintain an open file table for each process, you need to add `f_num` of the number of records in the struct, an open file `list file_list`, and an allocated `fd`, and make this structure associated with the following structure 
+```c
+struct f_node {
+	struct file* f;
+	struct list_elem elem;
+	int fd;
+};
+```
+Therefore, each time you open a file you need to create a file_node structure, assign a handle, and add file_node to file_list; finally return the file handle.
+
+- Step5: Filesize(). Get fd from the user stack and get the file pointer from the process open file table by fd.Call file_len gth to get the file size.
+```c
+ret = file_length(search_fd(&thread_current()->file_list, fd)->ptr);
+```
+- Step5: Read().Get the fd buffer size three parameters from the user stack. If fd is a standard input device, call input_getc(). If fd is a file handle, fd gets the file pointer from the process open file table, and calls file_read() function from the file and reading data in the middle.
+```c
+pop_stack(f->esp, &size, 7);
+pop_stack(f->esp, &buffer, 6);
+pop_stack(f->esp, &fd, 5);
+buffer[i] = input_getc();
+ret = file_read(pf->ptr, buffer, size);
+```
+- Step6: Write().1. First take three parameters from the user stack fd, buffer, size as the Step5.
+```c
+pop_stack(f->esp, &size, 7);
+	pop_stack(f->esp, &buffer, 6);
+	pop_stack(f->esp, &fd, 5);
+
+```
+If fd is a file handle, first find the file pointer corresponding to the handle from the process open file table and then call the `file_write()` function provided by pintos to write data to the file.
+```c
+ret = file_write(pf->ptr, buffer, size);
+```
+2. Open the file table will be established when the file is opened, and then the specific implementation when the SYS_OPEN system call is implemented.
+3. If fd is the standard output stdout handle, call the putbuf function to output to the terminal.
+
+- Step7: Seek().Extract the file sentence from the user stack. The distance to which the fd handle should be moved, convert fd to a file pointer, and call the file_seek() function to move the file pointer.
+```c
+pop_stack(f->esp, &fd, 5);
+pop_stack(f->esp, &pos, 4);
+file_seek(search_fd(&thread_current()->file_list, pos)->ptr, fd);
+```
+- Step8. syscall_tell().Remove the file sentence from the user stack. The distance the fd handle should move, turn fd into a file pointer, and call the file_tell() function to get the pointer position.
+```c
+pop_stack(f->esp, &fd, 1);
+ret = file_tell(search_fd(&thread_current()->file_list, fd)->ptr);
+```
+- Step9. syscall_close().Get the handle of the file to close from the user stack. Find the corresponding file in the user open file list to get the file pointer. Call the clean_single_file() function to close the file and release the struct file_node.
+```c
+pop_stack(f->esp, &fd, 1);
+clean_single_file(&thread_current()->file_list, fd);
+```
