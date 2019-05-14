@@ -13,24 +13,27 @@ Task2-Process Control Syscalls, Task3-File Operation Syscalls, Code annotaion
 - Does your code exhibit any major memory safety problems (especially regarding C
 strings), memory leaks, poor error handling, or race conditions?
 ```
-Yes, we have had these problems, but we tried our best to solve these memory safety problems in the later testing process.
+Yes, we have had these problems, but we tried our best to solve these memory safety 
+problems in the later testing process.
 ```
 - Did you use consistent code style? Your code should blend in with the existing Pintos
 code. Check your use of indentation, your spacing, and your naming conventions.
 ```
-Yes, we use a continuous code style. We have used code refactoring to keep the mix code consistent in style.
+Yes, we use a continuous code style. We have used code refactoring to keep the mix 
+code consistent in style.
 ```
 - Is your code simple and easy to understand?
 ```
 Our code is not very simple, but we wrote very detailed comments.
 ```
-- If you have very complex sections of code in your solution, did you add enough comments to explain them?
+- If you have very complex sections of code in your solution, did you add enough comments to explain them?
 ```
 Yes. it is .Yes, I do.
 ```
 - Did you leave commented-out code in your final submission?
 ```
-Yes, I have tried to do that, but some of commented-out codes are also important to demonstrate how we modifiy the code.
+Yes, I have tried to do that, but some of commented-out codes are also important to 
+demonstrate how we modifiy the code.
 ```
 - Did you copy-paste code instead of creating reusable functions?
 ```
