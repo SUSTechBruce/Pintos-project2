@@ -228,3 +228,69 @@ sema_down(sema);
 ```
 ## Rationale
 - n implementing these functions, we analyzed the various deep call functions involved in these functions, and used the synchronization `semaphore` to ensure the relationship between the father and child processes.
+
+## Task3: File Operation Syscalls
+## Data structure and functions
+### syscall.h
+```c
+struct f_process {
+	struct file* process_r;
+	struct list_elem elem;
+	int index;
+};
+```
+- Design a struct for record the process of files, including process_r, list_elem elem, index.
+### thread.h
+```c
+enum thread_status
+  {
+    THREAD_RUNNING,     /* Running thread. */
+    THREAD_READY,       /* Not running but ready to run. */
+    THREAD_BLOCKED,     /* Waiting for an event to trigger. */
+    THREAD_DYING        /* About to be destroyed. */
+  };
+```
+- States in a thread's life cycle.
+```c
+enum process_status process_status;
+```
+- Record the status of process, to check whether the loading is succussful or failure.
+```c
+struct semaphore is_load;   
+```
+- The current thread waits until the end of all processes
+```c
+int exit_status;    
+```
+- Status code when exiting.
+```c
+void Exit(struct intr_frame *f);
+```
+
+```c
+int Create(struct intr_frame *f);
+```
+```c
+int Remove(struct intr_frame *f);
+```
+```c
+int Open(struct intr_frame *f);
+```
+```c
+int Filesize(struct intr_frame *f);
+```
+```c
+int Read(struct intr_frame *f);
+```
+```c
+int Write(struct intr_frame *f);
+```
+```c
+void Seek(struct intr_frame *f);
+```
+```c
+int syscall_tell(struct intr_frame *f);
+```
+```c
+void syscall_close(struct intr_frame *f);
+```
