@@ -258,7 +258,7 @@ enum process_status process_status;
 ```c
 struct semaphore is_load;   
 ```
-- The current thread waits until the end of all processes
+- The current thread waits until the end of all processes.
 ```c
 int exit_status;    
 ```
@@ -266,31 +266,40 @@ int exit_status;
 ```c
 void Exit(struct intr_frame *f);
 ```
-
+- This system call is called when the user program exits normally.
 ```c
 int Create(struct intr_frame *f);
 ```
+- System call, create file.
 ```c
 int Remove(struct intr_frame *f);
 ```
+- System call, delete file.
 ```c
 int Open(struct intr_frame *f);
 ```
+- System call, open file.
 ```c
 int Filesize(struct intr_frame *f);
 ```
+- System call to get the file size.
 ```c
 int Read(struct intr_frame *f);
 ```
+- System call, read file.
 ```c
 int Write(struct intr_frame *f);
 ```
+- The function will call this system call to output to the screen, so without implementing this system call, the user program will not be able to output any characters.
 ```c
 void Seek(struct intr_frame *f);
 ```
+- Moving file pointer.
 ```c
 int syscall_tell(struct intr_frame *f);
 ```
+- Returns the current position of the file pointer.
 ```c
 void syscall_close(struct intr_frame *f);
 ```
+- Close file.
