@@ -1,11 +1,44 @@
 # Pintos Project2 Report: User programs
 :+1: Pintos project_2  - for SUSTech OS  :shipit:
-## Team Members and Mission distribution
+
+## Qustion and Reflection
+- A reflection on the project–what exactly did each member do? What went well, and
+what could be improved?
 ```
 11612201 Zhongwei Wan : 
 Task1-Argument Passing, Task2-Process Control Syscalls, Final report
 11612201 Xuande Tang : 
 Task2-Process Control Syscalls, Task3-File Operation Syscalls, Code annotaion
+```
+- Does your code exhibit any major memory safety problems (especially regarding C
+strings), memory leaks, poor error handling, or race conditions?
+```
+Yes, we have had these problems, but we tried our best to solve these memory safety problems in the later testing process.
+```
+- Did you use consistent code style? Your code should blend in with the existing Pintos
+code. Check your use of indentation, your spacing, and your naming conventions.
+```
+Yes, we use a continuous code style. We have used code refactoring to keep the mix code consistent in style.
+```
+- Is your code simple and easy to understand?
+```
+Our code is not very simple, but we wrote very detailed comments.
+```
+- If you have very complex sections of code in your solution, did you add enough comments to explain them?
+```
+Yes. it is .Yes, I do.
+```
+- Did you leave commented-out code in your final submission?
+```
+Yes, I have tried to do that, but some of commented-out codes are also important to demonstrate how we modifiy the code.
+```
+- Did you copy-paste code instead of creating reusable functions?
+```
+Fifty fifty.
+```
+- Are your lines of source code excessively long? (more than 100 characters)?
+```
+Negative.
 ```
 
 ## Task 1: Argument Passing
@@ -391,5 +424,6 @@ ret = file_read(pf->ptr, buffer, size);
 lock_release(&filesys_lock);
 ```
 ## Rationale
-In implementing these nine system call functions, we use a lot of functions provided by the source code, such as file_read (pf->ptr, buffer, size) or file_write (pf->ptr, buffer, size). Reading these source code can help us with our tasks. In addition, in order to maintain the synchronization of the program, a file lock is added to these key operations.
+In implementing these nine system call functions, we use a lot of functions provided by the source code, such as `file_read (pf->ptr, buffer, size)` or `file_write (pf->ptr, buffer, size)`. Reading these source code can help us with our tasks. In addition, in order to maintain the synchronization of the program, a file lock is added to these key operations.
+
 
