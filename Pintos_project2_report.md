@@ -383,3 +383,13 @@ ret = file_tell(search_fd(&thread_current()->file_list, fd)->ptr);
 pop_stack(f->esp, &fd, 1);
 clean_single_file(&thread_current()->file_list, fd);
 ```
+## Synchronization
+In order to maintain synchronization, we added `lock_acquire(&filesys_lock)` and `lock_release(&filesys_lock)` to all key steps of the system call function to ensure that the process is executed without interference from other processes.For instance:
+```c
+lock_acquire(&filesys_lock);
+ret = file_read(pf->ptr, buffer, size);
+lock_release(&filesys_lock);
+```
+## Rationale
+In implementing these nine system call functions, we use a lot of functions provided by the source code, such as file_read (pf->ptr, buffer, size) or file_write (pf->ptr, buffer, size). Reading these source code can help us with our tasks. In addition, in order to maintain the synchronization of the program, a file lock is added to these key operations.
+
