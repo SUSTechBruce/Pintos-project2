@@ -300,35 +300,35 @@ int exit_status;
 ```
 - Status code when exiting.
 ```c
-void Exit(struct intr_frame *f);
+void exit(struct intr_frame *f);
 ```
 - This system call is called when the user program exits normally.
 ```c
-int Create(struct intr_frame *f);
+int create(struct intr_frame *f);
 ```
 - System call, create file.
 ```c
-int Remove(struct intr_frame *f);
+int remove(struct intr_frame *f);
 ```
 - System call, delete file.
 ```c
-int Open(struct intr_frame *f);
+int open(struct intr_frame *f);
 ```
 - System call, open file.
 ```c
-int Filesize(struct intr_frame *f);
+int filesize(struct intr_frame *f);
 ```
 - System call to get the file size.
 ```c
-int Read(struct intr_frame *f);
+int read(struct intr_frame *f);
 ```
 - System call, read file.
 ```c
-int Write(struct intr_frame *f);
+int write(struct intr_frame *f);
 ```
 - The function will call this system call to output to the screen, so without implementing this system call, the user program will not be able to output any characters.
 ```c
-void Seek(struct intr_frame *f);
+void seek(struct intr_frame *f);
 ```
 - Moving file pointer.
 ```c
