@@ -15,6 +15,7 @@ strings), memory leaks, poor error handling, or race conditions?
 ```
 Yes, we have had these problems, but we tried our best to solve these memory safety 
 problems in the later testing process.
+
 ```
 - Did you use consistent code style? Your code should blend in with the existing Pintos
 code. Check your use of indentation, your spacing, and your naming conventions.
@@ -24,7 +25,7 @@ code consistent in style.
 ```
 - Is your code simple and easy to understand?
 ```
-Our code is not very simple, but we wrote very detailed comments.
+Our code is not very simple, and we wrote very detailed comments.
 ```
 - If you have very complex sections of code in your solution, did you add enough comments to explain them?
 ```
@@ -37,7 +38,7 @@ demonstrate how we modifiy the code.
 ```
 - Did you copy-paste code instead of creating reusable functions?
 ```
-Fifty fifty.
+We looked at some code written by other people and some of their ideas. We thought about modifications based on that and we extracted some reusable functions based on that.
 ```
 - Are your lines of source code excessively long? (more than 100 characters)?
 ```
@@ -82,7 +83,7 @@ static bool setup_stack(char * file_name_str, void **esp);
 - Create a minimal stack by mapping a zeroed page at the top of user virtual memory.
 ### syscall.c
 ```c
-int IWrite(struct intr_frame *f);
+write(int size,void *buffer,int fd);
 ```
 - write mission of system call.
 ## II. Algorithms and implementations
@@ -178,7 +179,7 @@ lock_release(&filesys_lock);
 ## Data structure and functions
 ### syscall.c
 ```c
-void judge_stack_addr(const void *address);
+void check_valid_get_address(const void *address);
 ```
 - Determine whether the address is reasonable, such as whether it exceeds the address of the stack, and whether it does   not match the address format of the stack.
 ```c
@@ -194,20 +195,20 @@ void syscall_handler();
 ```
 - Call the corresponding code according to the parameter name.
 ```c
-void Halt(void);
+void halt();
 ```
 - system call Halt.
 ```c
-int Execute(struct intr_frame *f);
+int execute(char *file_name);
 ```
 - system call Execute.
 ```c
-int Wait(struct intr_frame *f);
+int wait(tid_t tid);
 ```
 - system call Wait;
 ### thread.h
 ```c
-struct child_process * next_c_process; 
+struct child_process * wait; 
 ```
 - Next child process.
 ```c
@@ -223,7 +224,7 @@ enum process_status check;
 ```
 - Save the process state, whether it is a successful load or a failure.
 ```c
-struct file *exec_file;  
+struct file *self;  
 ```
 - Determine if this file is an executable file.
 ```c
@@ -236,13 +237,13 @@ struct file *exec_file;
 - **Step2**: The system calls system call HALT. First, call the `shut_down_poweroff()` function to shut down the operating system. When the user program causes a page fault, it will enter the `pagefault()` function. We need to add the pagefault function to handle the page error.
 ```c
 
-void Halt(void) {
+void halt() {
 	shutdown_power_off();
 }
 ```
 - **Step3**:Execute(). In this algorithm, the user can create a child process using this system call. The specific steps are : **a.** First, assign a page and copy a user-provided username. **b.** Create a child process in the function call process execute function. **c.** After calling `process_execute()`, you need to wait for `sema_down(sema)` on a semaphore until the user program is successfully loaded in the `start_process()` function.After `semp_up(sema)` activates the parent process, it should immediately hang itself after activating the parent process,`sema_down(sema)`.**d**. Add semaphore `WaitSuccess` to the struct_thread structure, return pid if the child process is created successfully, and return -1 if it fails.
 ```c
-int execute_process(char *file_n);
+int execute_process(char *file_name);
 ```
 - **Step4**:Wait().First, we made it clear that the parent process may have to wait for the child process to finish after creating the child process. There may be two situations. One is when the parent process calls process_wait() and the child process has not ended.
 The parent process will be suspended, and the parent process will wake up after the child process ends, and the parent process will get the return value. The second is that the child process has ended when the parent process calls `process_wait()`. This requires the child process to save the return value to the process control block of the parent process. So we need to add a data structure in `thread.h` to save the return value of the child process. Therefore, our approach is to **a.** Compare the pid implementation by traversing `children_list`. If the process control block of the child process is not found in child_list; indicating that the child process has been closed Bundle, directly return the return value of the child process from its own child_list linked list. **b.** If the child process is still running, execute `sema_down(t->parent->SemaWait)` to suspend itself. After the child process is executed, it is found. In waiting==true, you are waiting, and then release the parent process `sema_up(SemaWait)`; if `waiting==false`, you don't need to wake up the parent process. **c.** At the end of a process, call the`free()` function.
@@ -269,24 +270,47 @@ sema_down(sema);
 ## Data structure and functions
 ### syscall.h
 ```c
-struct f_node {
-	struct file* f;
-	struct list_elem elem;
-	int fd;
-};
+void exit(int status);
 ```
+- This system call is called when the user program exits normally.
+```c
+int create(char *name,off_t initial_size);
+```
+- System call, create file.
+```c
+int remove(char *name);
+```
+- System call, delete file.
+```c
+int open(char *name);
+```
+- System call, open file.
+```c
+int filesize(int fd);
+```
+- System call to get the file size.
+```c
+int read(int size,void *buffer,int fd);
+```
+- System call, read file.
+```c
+int write(int size,void *buffer,int fd);
+```
+- The function will call this system call to output to the screen, so without implementing this system call, the user program will not be able to output any characters.
+```c
+void seek(int fd,int pos);
+```
+- Moving file pointer.
+```c
+int tell(int fd);
+```
+- Returns the current position of the file pointer.
+```c
+void close(int fd);
+```
+- Close file.
 - Design a struct for record the process of files, including process_r, list_elem elem, index.
 ### thread.h
-```c
-enum thread_status
-  {
-    THREAD_RUNNING,     /* Running thread. */
-    THREAD_READY,       /* Not running but ready to run. */
-    THREAD_BLOCKED,     /* Waiting for an event to trigger. */
-    THREAD_DYING        /* About to be destroyed. */
-  };
-```
-- States in a thread's life cycle.
 ```c
 enum process_status process_status;
 ```
@@ -299,49 +323,17 @@ struct semaphore is_load;
 int exit_status;    
 ```
 - Status code when exiting.
+### process.h
 ```c
-void exit(struct intr_frame *f);
+struct process_file {
+	struct file* ptr;
+	struct list_elem elem;
+	int fd;
+};
 ```
-- This system call is called when the user program exits normally.
-```c
-int create(struct intr_frame *f);
-```
-- System call, create file.
-```c
-int remove(struct intr_frame *f);
-```
-- System call, delete file.
-```c
-int open(struct intr_frame *f);
-```
-- System call, open file.
-```c
-int filesize(struct intr_frame *f);
-```
-- System call to get the file size.
-```c
-int read(struct intr_frame *f);
-```
-- System call, read file.
-```c
-int write(struct intr_frame *f);
-```
-- The function will call this system call to output to the screen, so without implementing this system call, the user program will not be able to output any characters.
-```c
-void seek(struct intr_frame *f);
-```
-- Moving file pointer.
-```c
-int syscall_tell(struct intr_frame *f);
-```
-- Returns the current position of the file pointer.
-```c
-void syscall_close(struct intr_frame *f);
-```
-- Close file.
 ## Algorithm and implenmentation
 
-- Step1: Exit().This system call is called when the user exits the program. Therefore, first we should take the return value, save it in the variable of the process control block, and call `thread_exit()` to exit the process. We also need to consider that when the user program exits abnormally, for instance, array out of bounds，it needs to add another function to achieve.
+- Step1: exit().This system call is called when the user exits the program. Therefore, first we should take the return value, save it in the variable of the process control block, and call `thread_exit()` to exit the process. We also need to consider that when the user program exits abnormally, for instance, array out of bounds，it needs to add another function to achieve.
 ```c
 void
 thread_exit(void)
@@ -355,78 +347,86 @@ thread_exit(void)
 	NOT_REACHED();
 }
 ```
-- Step2: Create().For this system call, we need to take the file name separated from the parameter, and then call the filesys_create() function to save the return value.
+- Step2: create().For this system call, we need to take the file name separated from the parameter, and then call the filesys_create() function to save the return value.
 ```c
-ret = filesys_create(name, initial_size);
+result = filesys_create(name, initial_size);
 ```
-- Step3: Remove(). Remove the file name of the file to be deleted from the user stack. Call filesys_remove() to delete the file.
+- Step3: remove(). Remove the file name of the file to be deleted from the user stack. Call filesys_remove() to delete the file.
 ```c
-if (filesys_remove(name) != NULL){
-		ret = true;
-	}else{
-		ret = false;
-		}
+if (filesys_remove(name) == NULL)
+		result= 0;
+	else
+		result= 1;
 ```
-- Step4: Open().Take the file name and call the filesys_open function to open the file. At the same time, in order to maintain an open file table for each process, you need to add `f_num` of the number of records in the struct, an open file `list file_list`, and an allocated `fd`, and make this structure associated with the following structure 
+- Step4: open().Take the file name and call the filesys_open function to open the file. At the same time, in order to maintain an open file table for each process, you need to add `f_num` of the number of records in the struct, an open file `list file_list`, and an allocated `fd`, and make this structure associated with the following structure 
 ```c
-struct f_node {
-	struct file* f;
+struct process_file {
+	struct file* ptr;
 	struct list_elem elem;
 	int fd;
 };
 ```
 Therefore, each time you open a file you need to create a file_node structure, assign a handle, and add file_node to file_list; finally return the file handle.
 
-- Step5: Filesize(). Get fd from the user stack and get the file pointer from the process open file table by fd.Call file_len gth to get the file size.
+- Step5: filesize(). Get fd from the user stack and get the file pointer from the process open file table by fd.Call file_len gth to get the file size.
 ```c
-ret = file_length(search_fd(&thread_current()->file_list, fd)->ptr);
+result = file_length(search_fd(&thread_current()->file_list, fd)->ptr);
 ```
-- Step5: Read().Get the fd buffer size three parameters from the user stack. If fd is a standard input device, call input_getc(). If fd is a file handle, fd gets the file pointer from the process open file table, and calls file_read() function from the file and reading data in the middle.
+- Step5: read().Get the fd buffer size three parameters from the user stack. If fd is a standard input device, call input_getc(). If fd is a file handle, fd gets the file pointer from the process open file table, and calls file_read() function from the file and reading data in the middle.
 ```c
-pop_stack(f->esp, &size, 7);
-pop_stack(f->esp, &buffer, 6);
-pop_stack(f->esp, &fd, 5);
-buffer[i] = input_getc();
-ret = file_read(pf->ptr, buffer, size);
+struct process_file *pf = search_file_id(&thread_current()->file_list, fd);
+if (pf == NULL)
+	return -1;
+else
+{
+	lock_acquire(&filesys_lock);
+	result = file_read(pf->ptr, buffer, size);
+	lock_release(&filesys_lock);
+}
 ```
-- Step6: Write().1. First take three parameters from the user stack fd, buffer, size as the Step5.
+- Step6: write().1. First take three parameters from the user stack fd, buffer, size as the Step5.
 ```c
-pop_stack(f->esp, &size, 7);
-	pop_stack(f->esp, &buffer, 6);
-	pop_stack(f->esp, &fd, 5);
-
+args[0] = *((int *)check_valid_get_address(p + 7));
+args[1] = *((int *)check_valid_get_address(p + 6));
+args[2] = *((int *)check_valid_get_address(p + 5));
 ```
 If fd is a file handle, first find the file pointer corresponding to the handle from the process open file table and then call the `file_write()` function provided by pintos to write data to the file.
 ```c
-ret = file_write(pf->ptr, buffer, size);
+result = file_write(pf->ptr, buffer, size);
 ```
 2. Open the file table will be established when the file is opened, and then the specific implementation when the SYS_OPEN system call is implemented.
 3. If fd is the standard output stdout handle, call the putbuf function to output to the terminal.
 
-- Step7: Seek().Extract the file sentence from the user stack. The distance to which the fd handle should be moved, convert fd to a file pointer, and call the file_seek() function to move the file pointer.
+- Step7: seek().Extract the file sentence from the user stack. The distance to which the fd handle should be moved, convert fd to a file pointer, and call the file_seek() function to move the file pointer.
 ```c
-pop_stack(f->esp, &fd, 5);
-pop_stack(f->esp, &pos, 4);
+fd = args[0] = *((int *)check_valid_get_address(p + 5));
+pos = args[1] = *((int *)check_valid_get_address(p + 4));
 file_seek(search_fd(&thread_current()->file_list, pos)->ptr, fd);
 ```
-- Step8. syscall_tell().Remove the file sentence from the user stack. The distance the fd handle should move, turn fd into a file pointer, and call the file_tell() function to get the pointer position.
+- Step8. tell().Remove the file sentence from the user stack. The distance the fd handle should move, turn fd into a file pointer, and call the file_tell() function to get the pointer position.
 ```c
-pop_stack(f->esp, &fd, 1);
-ret = file_tell(search_fd(&thread_current()->file_list, fd)->ptr);
+fd = args[0] = *((int *)check_valid_get_address(p + 1));
+result = file_tell(search_fd(&thread_current()->file_list, fd)->ptr);
 ```
-- Step9. syscall_close().Get the handle of the file to close from the user stack. Find the corresponding file in the user open file list to get the file pointer. Call the clean_single_file() function to close the file and release the struct file_node.
+- Step9. close().Get the handle of the file to close from the user stack. Find the corresponding file in the user open file list to get the file pointer. Call the clean_single_file() function to close the file and release the struct file_node.
 ```c
-pop_stack(f->esp, &fd, 1);
+fd = args[0] = *((int *)check_valid_get_address(p + 1));
 clean_single_file(&thread_current()->file_list, fd);
 ```
 ## Synchronization
 In order to maintain synchronization, we added `lock_acquire(&filesys_lock)` and `lock_release(&filesys_lock)` to all key steps of the system call function to ensure that the process is executed without interference from other processes.For instance:
 ```c
 lock_acquire(&filesys_lock);
-ret = file_read(pf->ptr, buffer, size);
+result = file_read(pf->ptr, buffer, size);
 lock_release(&filesys_lock);
 ```
 ## Rationale
 In implementing these nine system call functions, we use a lot of functions provided by the source code, such as `file_read (pf->ptr, buffer, size)` or `file_write (pf->ptr, buffer, size)`. Reading these source code can help us with our tasks. In addition, in order to maintain the synchronization of the program, a file lock is added to these key operations.
+
+# Reference
+https://github.com/pindexis/pintos-project2  
+https://github.com/Wang-GY/pintos-project2  
+https://wenku.baidu.com/view/eed6bbdaa48da0116c175f0e7cd184254b351ba8.html  
+https://download.csdn.net/download/zhibolau/9275043  
 
 
