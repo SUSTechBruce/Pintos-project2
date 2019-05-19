@@ -128,7 +128,8 @@ file = filesys_open(file_str);
 ```
 - **Step5**: Follow the saved pointers in step 2 in the stack, put `argc`, `argv`, and let the user stack pointer point to the new stack top.(Put the parameters into the specified memory, and set the parameters into the specified memory)
 ```c
-void put_stack_operation(int nums, char * word, char * file_name_str, char * ok_str, void ** space, char * file_str)
+void put_stack_operation(int nums, char * word, char * file_name_str, char * ok_str, void ** space, 
+char * file_str)
 {
 	int *argument = calloc(nums, sizeof(int));
 	int count;
