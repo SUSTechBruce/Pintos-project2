@@ -7,8 +7,9 @@ what could be improved?
 ```
 11612201 Zhongwei Wan : 
 Task1-Argument Passing, Task2-Process Control Syscalls, Final report
-11612201 Xuande Tang : 
+11610103 Dexuan Tang : 
 Task2-Process Control Syscalls, Task3-File Operation Syscalls, Code annotaion
+The task2 and task3 , we did a good job. We can improve the Code readability.
 ```
 - Does your code exhibit any major memory safety problems (especially regarding C
 strings), memory leaks, poor error handling, or race conditions?
@@ -45,9 +46,12 @@ with other one's idea. That is a great way to improve our coding ability.
 ```
 - Are your lines of source code excessively long? (more than 100 characters)?
 ```
-Negative.
+Negative, we have solved this problem.
 ```
-
+- Did you re-implement linked list algorithms instead of using the provided list manipulation?
+```
+No, we just use the given list manipulation.
+```
 ## Task 1: Argument Passing
 ## I.Data structures and functions
 ### thread.h
