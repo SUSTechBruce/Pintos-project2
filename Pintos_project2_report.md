@@ -38,7 +38,10 @@ demonstrate how we modifiy the code.
 ```
 - Did you copy-paste code instead of creating reusable functions?
 ```
-We looked at some code written by other people and some of their ideas. We thought about modifications based on that and we extracted some reusable functions based on that.
+We looked at some code written by other people and some of their ideas. We thought 
+about designing and constructing based on combining our thoughts with some source material
+. Most of our job is designing and complete the mission in the project and comparing our idea 
+with other one's idea. That is a great way to improve our coding ability.
 ```
 - Are your lines of source code excessively long? (more than 100 characters)?
 ```
